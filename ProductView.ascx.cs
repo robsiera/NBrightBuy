@@ -327,7 +327,7 @@ namespace Nevoweb.DNN.NBrightBuy
                         // filter mode and will persist past category selection.
                         if ((_catid == "" && _catname == ""))
                         {
-                            if (!_navigationdata.FilterMode) _navigationdata.CategoryId = ""; // filter mode persist catid
+                            if (!_navigationdata.FilterMode) _navigationdata.CategoryId = 0; // filter mode persist catid
 
                             // if navdata is not deleted then get filter from navdata, created by productsearch module.
                             strFilter = _navigationdata.Criteria;
@@ -342,7 +342,7 @@ namespace Nevoweb.DNN.NBrightBuy
 
                             // We have a category selected (in url), so overwrite categoryid navigationdata.
                             // This allows the return to the same category after a returning from a entry view.
-                            _navigationdata.CategoryId = _catid;
+                            if (Utils.IsNumeric(_catid)) _navigationdata.CategoryId = Convert.ToInt32(_catid);
                             strFilter = strHeaderFilter;
                         }
 
@@ -430,7 +430,7 @@ namespace Nevoweb.DNN.NBrightBuy
                         }
                         // We have a category selected (in url), so overwrite categoryid navigationdata.
                         // This allows the return to the same category after a returning from a entry view.
-                        _navigationdata.CategoryId = _catid;
+                        if (Utils.IsNumeric(_catid)) _navigationdata.CategoryId = Convert.ToInt32(_catid);
                         catseo = _catid;
                     }
 
@@ -480,7 +480,7 @@ namespace Nevoweb.DNN.NBrightBuy
                     }
                     else
                     {
-                        if (!_navigationdata.FilterMode) _navigationdata.CategoryId = ""; // filter mode persist catid
+                        if (!_navigationdata.FilterMode) _navigationdata.CategoryId = 0; // filter mode persist catid
                         if (_strOrder == "{bycategoryproduct}") _strOrder = " Order by ModifiedDate DESC  ";
                     }
 

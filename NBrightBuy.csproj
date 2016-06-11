@@ -52,7 +52,7 @@
       <HintPath>..\..\..\bin\NBrightDNN.dll</HintPath>
     </Reference>
     <Reference Include="RazorEngine">
-      <HintPath>..\..\..\..\..\..\Support\DNN7x\bin\RazorEngine.dll</HintPath>
+      <HintPath>..\..\..\bin\RazorEngine.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -287,6 +287,20 @@
     <Compile Include="PrintView.aspx.designer.cs">
       <DependentUpon>PrintView.aspx.cs</DependentUpon>
     </Compile>
+    <Compile Include="ProductRazorView.ascx.cs">
+      <DependentUpon>ProductRazorView.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProductRazorView.ascx.designer.cs">
+      <DependentUpon>ProductRazorView.ascx.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ProductRazorViewSettings.ascx.cs">
+      <DependentUpon>ProductRazorViewSettings.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ProductRazorViewSettings.ascx.designer.cs">
+      <DependentUpon>ProductRazorViewSettings.ascx.cs</DependentUpon>
+    </Compile>
     <Compile Include="ProductSearch.ascx.cs">
       <DependentUpon>ProductSearch.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -353,6 +367,7 @@
     <Compile Include="ProductView.ascx.designer.cs">
       <DependentUpon>ProductView.ascx.cs</DependentUpon>
     </Compile>
+    <Compile Include="render\NBrightBuyRazorTokens.cs" />
     <Compile Include="XmlConnector.ashx.cs">
       <DependentUpon>XmlConnector.ashx</DependentUpon>
     </Compile>
@@ -423,6 +438,8 @@
       <SubType>ASPXCodeBehind</SubType>
     </Content>
     <Content Include="PrintView.aspx" />
+    <Content Include="ProductRazorView.ascx" />
+    <Content Include="ProductRazorViewSettings.ascx" />
     <Content Include="ProductSearch.ascx" />
     <Content Include="ProfileForm.ascx" />
     <Content Include="ProfileFormSettings.ascx">

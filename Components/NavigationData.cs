@@ -33,7 +33,7 @@ namespace Nevoweb.DNN.NBrightBuy.Components
             _storageType = StoreSettings.Current.StorageTypeClient;
             Exists = false;
             _portalId = portalId;
-            _cookieName = "NBrightBuyNav" + "_" + moduleKey + nameAppendix;
+            _cookieName = "NBrightBuyNav" + "_" + moduleKey.Trim() + nameAppendix.Trim();
             Get();
         }
 
@@ -147,24 +147,31 @@ namespace Nevoweb.DNN.NBrightBuy.Components
 
                             break;
                         case "range":
-                            // We always need to return a value, otherwise we get an error, so range select cannot be empty. (we'll default here to 9999999)
-                            if (searchValFrom == "")
+                            if (searchValFrom != "") // don't include search if we have no value input.
                             {
-                                if (sqltype.ToLower() == "datetime")
-                                    searchValFrom = "1800-01-01";
-                                else
-                                    searchValFrom = "0";                                
-                            }
-                            if (searchValTo == "")
-                            {
-                                if (sqltype.ToLower() == "datetime")
-                                    searchValTo = "3000-12-30";
-                                else
-                                    searchValTo = "999999999";
-                            }
+                                // We always need to return a value, otherwise we get an error, so range select cannot be empty. (we'll default here to 9999999)
+                                if (searchValFrom == "")
+                                {
+                                    if (sqltype.ToLower() == "datetime")
+                                        searchValFrom = "1800-01-01";
+                                    else
+                                        searchValFrom = "0";
+                                }
+                                if (searchValTo == "")
+                                {
+                                    if (sqltype.ToLower() == "datetime")
+                                        searchValTo = "3000-12-30";
+                                    else
+                                        searchValTo = "999999999";
+                                }
 
-                            _criteria += " " + sqloperator + " " +
-                                         GenXmlFunctions.GetSqlFilterRange(sqlfield, sqltype, searchValFrom, searchValTo, sqlcol);
+                                _criteria += " " + sqloperator + " " +
+                                             GenXmlFunctions.GetSqlFilterRange(sqlfield, sqltype, searchValFrom, searchValTo, sqlcol);
+                            }
+                            else
+                            {
+                                _criteria += " 1 = 1 "; // add a dummy test, so we get a valid SQL structure.
+                            }
                             break;
                         case "cats":
                             _criteria += " " + sqloperator + " ";
@@ -182,9 +189,10 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         private String BuildCriteriaCatId()
         {
             var criteriacatid = "";
-            var catid = HttpContext.Current.Request.QueryString["catid"] ?? CategoryId;
-            CategoryId = catid;
-            if (!string.IsNullOrEmpty(catid))
+            var catid = HttpContext.Current.Request.QueryString["catid"] ?? CategoryId.ToString("D");
+            CategoryId = 0;
+            if (Utils.IsNumeric(catid)) CategoryId = Convert.ToInt32(catid);
+            if (CategoryId > 0)
             {
                 var objQual = DotNetNuke.Data.DataProvider.Instance().ObjectQualifier;
                 var dbOwner = DotNetNuke.Data.DataProvider.Instance().DatabaseOwner;
@@ -269,6 +277,7 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         public void Save()
         {
             #region "Get temp filename"
+
             var tempfilename = "";
 
             if (_storageType == DataStorageType.SessionMemory)
@@ -277,7 +286,7 @@ namespace Nevoweb.DNN.NBrightBuy.Components
             }
             else
             {
-                tempfilename = Cookie.GetCookieValue(_portalId, _cookieName, "tempname", "");                
+                tempfilename = Cookie.GetCookieValue(_portalId, _cookieName, "tempname", "");
             }
 
             if (tempfilename == "") tempfilename = Utils.GetUniqueKey(12);
@@ -290,26 +299,25 @@ namespace Nevoweb.DNN.NBrightBuy.Components
             {
                 Cookie.SetCookieValue(_portalId, _cookieName, "tempname", tempfilename, 1, "");
             }
+
             #endregion
 
-            if (XmlData != "")
-            {
-                var nbi = new NBrightInfo();
-                nbi.XMLData = XmlData;
+            var nbi = new NBrightInfo(true);
+            if (XmlData != "") nbi.XMLData = XmlData;
 
-                nbi.SetXmlProperty("genxml/Criteria", _criteria);
-                nbi.SetXmlProperty("genxml/PageModuleId", PageModuleId);
-                nbi.SetXmlProperty("genxml/PageNumber", PageNumber);
-                nbi.SetXmlProperty("genxml/PageName", PageName);
-                nbi.SetXmlProperty("genxml/PageSize", PageSize);
-                nbi.SetXmlProperty("genxml/OrderBy", OrderBy);
-                nbi.SetXmlProperty("genxml/CategoryId", CategoryId);
-                nbi.SetXmlProperty("genxml/RecordCount", RecordCount);
-                nbi.SetXmlProperty("genxml/Mode", Mode);
+            nbi.SetXmlProperty("genxml/Criteria", _criteria);
+            nbi.SetXmlProperty("genxml/PageModuleId", PageModuleId);
+            nbi.SetXmlProperty("genxml/PageNumber", PageNumber);
+            nbi.SetXmlProperty("genxml/PageName", PageName);
+            nbi.SetXmlProperty("genxml/PageSize", PageSize);
+            nbi.SetXmlProperty("genxml/OrderBy", OrderBy);
+            nbi.SetXmlProperty("genxml/CategoryId", CategoryId.ToString("D"));
+            nbi.SetXmlProperty("genxml/RecordCount", RecordCount);
+            nbi.SetXmlProperty("genxml/Mode", Mode);
+            nbi.SetXmlProperty("genxml/OrderByIdx", OrderByIdx);
 
-                var filePath = StoreSettings.Current.FolderTempMapPath + "\\" + tempfilename;
-                Utils.SaveFile(filePath, nbi.XMLData);                
-            }
+            var filePath = StoreSettings.Current.FolderTempMapPath + "\\" + tempfilename;
+            Utils.SaveFile(filePath, nbi.XMLData);
 
 
             Exists = true;
@@ -349,9 +357,10 @@ namespace Nevoweb.DNN.NBrightBuy.Components
                 PageName = nbi.GetXmlProperty("genxml/PageName");
                 PageSize = nbi.GetXmlProperty("genxml/PageSize");
                 OrderBy = nbi.GetXmlProperty("genxml/OrderBy");
-                CategoryId = nbi.GetXmlProperty("genxml/CategoryId");
+                CategoryId = Convert.ToInt32(nbi.GetXmlPropertyDouble("genxml/CategoryId"));
                 RecordCount = nbi.GetXmlProperty("genxml/RecordCount");
                 Mode = nbi.GetXmlProperty("genxml/Mode");
+                OrderByIdx = nbi.GetXmlProperty("genxml/OrderByIdx");
 
             }
 
@@ -403,10 +412,11 @@ namespace Nevoweb.DNN.NBrightBuy.Components
             PageName = "";
             OrderBy = "";
             XmlData = "";
-            CategoryId = "";
+            CategoryId = 0;
             PageSize = "";
             RecordCount = "";
             Mode = "";
+            OrderByIdx = "";
         }
 
         /// <summary>
@@ -454,6 +464,11 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         public string OrderBy { get; set; }
 
         /// <summary>
+        /// Save the sort order index key 
+        /// </summary>
+        public string OrderByIdx { get; set; }
+
+        /// <summary>
         /// Save form xml data (this could be large, be careful on the cookie size)
         /// </summary>
         public string XmlData { get; set; }
@@ -461,7 +476,7 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         /// <summary>
         /// CategoryId Selected
         /// </summary>
-        public string CategoryId { get; set; }
+        public int CategoryId { get; set; }
 
         /// <summary>
         /// Count of records returned on last Display

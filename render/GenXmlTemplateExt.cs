@@ -1711,7 +1711,7 @@ namespace Nevoweb.DNN.NBrightBuy.render
                 {
                     var navigationData = new NavigationData(PortalSettings.Current.PortalId, modulekey);
                     catid = Utils.RequestQueryStringParam(HttpContext.Current.Request, "catid");
-                    if (String.IsNullOrEmpty(catid)) catid = navigationData.CategoryId;
+                    if (String.IsNullOrEmpty(catid)) catid = navigationData.CategoryId.ToString();
                     if (Utils.IsNumeric(catid))
                     {
                         validCatList = GetCateoriesInProductList(Convert.ToInt32(catid));
@@ -1797,7 +1797,7 @@ namespace Nevoweb.DNN.NBrightBuy.render
                 {
                     var navigationData = new NavigationData(PortalSettings.Current.PortalId, modulekey);
                     catid = Utils.RequestQueryStringParam(HttpContext.Current.Request, "catid");
-                    if (String.IsNullOrEmpty(catid)) catid = navigationData.CategoryId;
+                    if (String.IsNullOrEmpty(catid)) catid = navigationData.CategoryId.ToString();
                     if (Utils.IsNumeric(catid))
                     {
                         validCatList = GetCateoriesInProductList(Convert.ToInt32(catid));

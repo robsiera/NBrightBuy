@@ -8,9 +8,11 @@ using System.Web.UI.WebControls;
 using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using DotNetNuke.Common.Utilities;
+using DotNetNuke.Entities.Content.Taxonomy;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Services.Search;
+using DotNetNuke.Services.Search.Entities;
 using NBrightCore.common;
 using NBrightCore.render;
 using NBrightDNN;
@@ -19,8 +21,8 @@ using NBrightDNN;
 namespace Nevoweb.DNN.NBrightBuy.Components
 {
 
-    public class NBrightBuyController : DataCtrlInterfaceNBrightBuy, IPortable, ISearchable
-	{
+    public class NBrightBuyController : DataCtrlInterfaceNBrightBuy, IPortable
+    {
 
         #region "NBrightBuy override DB Public Methods"
 
@@ -42,7 +44,7 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         }
 
         /// <summary>
-        /// This method return the data item with the lang node merged id the lang param is past.  NOTE: The typecodeLang Param is redundant
+        /// This method return the data item with the lang node merged if the lang param is past.  NOTE: The typecodeLang Param is redundant
         /// </summary>
         /// <param name="itemId"></param>
         /// <param name="typeCodeLang">Redundant, set to ""</param>
@@ -53,10 +55,21 @@ namespace Nevoweb.DNN.NBrightBuy.Components
             return CBO.FillObject<NBrightInfo>(DataProvider.Instance().Get(itemId, typeCodeLang, lang));
         }
 
+        /// <summary>
+        /// Return ONLY the data record
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <returns></returns>
         public override NBrightInfo GetData(int itemId)
         {
             return CBO.FillObject<NBrightInfo>(DataProvider.Instance().GetData(itemId));
         }
+        /// <summary>
+        /// Returns only the LANG data record, by using no language recored itemid (parentitemid)
+        /// </summary>
+        /// <param name="parentItemId"></param>
+        /// <param name="lang"></param>
+        /// <returns></returns>
         public override NBrightInfo GetDataLang(int parentItemId, string lang)
         {
             return CBO.FillObject<NBrightInfo>(DataProvider.Instance().GetDataLang(parentItemId, lang));
@@ -117,6 +130,8 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         {
             return CBO.FillCollection<NBrightInfo>(DataProvider.Instance().GetDnnUsers(portalId, sqlSearchFilter, returnLimit, pageNumber, pageSize, recordCount));
         }
+
+      
 
         /// <summary>
         /// Get full record count for user search. (Needed for paging)
@@ -200,21 +215,20 @@ namespace Nevoweb.DNN.NBrightBuy.Components
                 strFilter += " and UserId = " + selUserId + " ";
             }
 
-            var l = GetList(portalId, moduleId, entityTypeCode, strFilter, "", 1);
+            var l = GetList(portalId, moduleId, entityTypeCode, strFilter, "", 1); // only return 1, not a real guidkey, so m,ay be duplicates.
             if (l.Count == 0) return null;
-            if (l.Count > 1)
-            {
-                for (int i = 1; i < l.Count; i++)
-                {
-                    // remove invalid DB entries
-                    Delete(l[i].ItemID);
-                }
-            }
             Utils.SetCache(strCacheKey, l[0]);
             return l[0];
         }
 
-
+        /// <summary>
+        /// This method return the data item with the lang node merged if the lang param is past. (with cache option)  NOTE: The typecodeLang Param is redundant
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <param name="typeCodeLang">Redundant, set to ""</param>
+        /// <param name="lang"></param>
+        /// <param name="debugMode"></param>
+        /// <returns></returns>
         public NBrightInfo GetData(int itemId, string typeCodeLang, string lang = "",bool debugMode = false)
         {
             if (lang == "") lang = Utils.GetCurrentCulture();
@@ -340,10 +354,17 @@ namespace Nevoweb.DNN.NBrightBuy.Components
                 strFilters += " and UserId = " + selUserId + " ";
             }
 
+            // NEW() in orderby needs random, so calc multiple cache keys from seconds
+	        var randomkey = "";
+	        if (strOrderBy.Contains("NEWID()"))
+	        {
+                randomkey = Convert.ToInt32(DateTime.Now.Second / 4).ToString("");
+	        }
+
             List<NBrightInfo> l = null;
 
             // get cache template 
-            var strCacheKey = portalId.ToString("") + "*" + moduleId.ToString("") + "*" + entityTypeCode + "*" + "*filter:" + strFilters.Replace(" ", "") + "*orderby:" + strOrderBy.Replace(" ", "") + "*" + returnLimit.ToString("") + "*" + pageNumber.ToString("") + "*" + pageSize.ToString("") + "*" + recordCount.ToString("") + "*" + entityTypeCodeLang + "*" + Utils.GetCurrentCulture();
+            var strCacheKey = portalId.ToString("") + "*" + moduleId.ToString("") + "*" + entityTypeCode + "*" + "*filter:" + strFilters.Replace(" ", "") + "*orderby:" + strOrderBy.Replace(" ", "") + "*" + returnLimit.ToString("") + "*" + pageNumber.ToString("") + "*" + pageSize.ToString("") + "*" + recordCount.ToString("") + "*" + entityTypeCodeLang + "*" + Utils.GetCurrentCulture() + randomkey;
             if (debugMode == false)
             {
                 l = (List<NBrightInfo>)Utils.GetCache(strCacheKey);
@@ -362,11 +383,41 @@ namespace Nevoweb.DNN.NBrightBuy.Components
             return l;
         }
 
+        /// <summary>
+        /// Build cachekey for razor, so we get the same results from cache for DB and razor.
+        /// </summary>
+        /// <param name="portalId"></param>
+        /// <param name="moduleId"></param>
+        /// <param name="entityTypeCode"></param>
+        /// <param name="entityTypeCodeLang"></param>
+        /// <param name="cultureCode"></param>
+        /// <param name="strFilters"></param>
+        /// <param name="strOrderBy"></param>
+        /// <param name="debugMode"></param>
+        /// <param name="selUserId"></param>
+        /// <param name="returnLimit"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="recordCount"></param>
+        /// <returns></returns>
+        public String GetDataListCacheKey(int portalId, int moduleId, string entityTypeCode, string entityTypeCodeLang, string cultureCode, string strFilters, string strOrderBy, bool debugMode = false, string selUserId = "", int returnLimit = 0, int pageNumber = 0, int pageSize = 0, int recordCount = 0)
+        {
+            // NEW() in orderby needs random, so calc multiple cache keys from seconds
+            var randomkey = "";
+            if (strOrderBy.Contains("NEWID()"))
+            {
+                randomkey = Convert.ToInt32(DateTime.Now.Second / 4).ToString("");
+            }
+
+            if (selUserId != "") strFilters += " and UserId = " + selUserId + " ";
+            return portalId.ToString("") + "*" + moduleId.ToString("") + "*" + entityTypeCode + "*" + "*filter:" + strFilters.Replace(" ", "") + "*orderby:" + strOrderBy.Replace(" ", "") + "*" + returnLimit.ToString("") + "*" + pageNumber.ToString("") + "*" + pageSize.ToString("") + "*" + recordCount.ToString("") + "*" + entityTypeCodeLang + "*" + Utils.GetCurrentCulture() + randomkey;
+        }
+
         #endregion
 
         #region "NBrightBuy Control functions"
 
-	    public string GetTemplateData(ModSettings modSettings, string templatename, string lang, bool debugMode = false)
+        public string GetTemplateData(ModSettings modSettings, string templatename, string lang, bool debugMode = false)
 	    {
 	        return GetTemplateData(modSettings.Moduleid, templatename, lang, modSettings.Settings(), debugMode);
 	    }
@@ -486,15 +537,109 @@ namespace Nevoweb.DNN.NBrightBuy.Components
             return strXml;
         }
 
+        /// <summary>
+        /// Update any empty language fields to the same as the base language data
+        /// </summary>
+        /// <param name="baseParentItemId">Itemid of the data record (ParentItemId of hte base language record)</param>
+        /// <param name="baseLang">Base Langauge culture code</param>
+        /// <param name="extraXmlNodes">List of extra nodes to be updated, this is for custom data. NBS defaults are already included. (imgs,docs,options,optionvalues,models)</param>
+        public void FillEmptyLanguageFields(int baseParentItemId, String baseLang, List<String> extraXmlNodes = null)
+        {
+            var baseInfo = GetDataLang(baseParentItemId, baseLang);
+            if (baseInfo != null)
+            {
+                foreach (var toLang in DnnUtils.GetCultureCodeList(baseInfo.PortalId))
+                {
+                    if (toLang != baseInfo.Lang)
+                    {
+                        var dlang = GetDataLang(baseParentItemId, toLang);
+                        if (dlang != null)
+                        {
+                            var nodList = baseInfo.XMLDoc.SelectNodes("genxml/textbox/*");
+                            if (nodList != null)
+                            {
+                                foreach (XmlNode nod in nodList)
+                                {
+                                    if (nod.InnerText.Trim() != "")
+                                    {
+                                        if (dlang.GetXmlProperty("genxml/textbox/" + nod.Name) == "")
+                                        {
+                                            dlang.SetXmlProperty("genxml/textbox/" + nod.Name, nod.InnerText);
+                                        }
+                                    }
+                                }
+                            }
+
+                            dlang = UpdateLangNodeFields("imgs",baseInfo,dlang);
+                            dlang = UpdateLangNodeFields("docs", baseInfo, dlang);
+                            dlang = UpdateLangNodeFields("options", baseInfo, dlang);
+                            dlang = UpdateLangNodeFields("optionvalues", baseInfo, dlang);
+                            dlang = UpdateLangNodeFields("models", baseInfo, dlang);
+
+                            if (extraXmlNodes != null)
+                            {
+                                foreach (var xmlname in extraXmlNodes)
+                                {
+                                    dlang = UpdateLangNodeFields(xmlname, baseInfo, dlang);
+                                }
+                            }
+
+                            Update(dlang);
+                        }
+                    }
+                }
+            }
+        }
+
+
         #endregion
 
-        #region "static methods"
+            #region "static methods"
+
+        private static NBrightInfo UpdateLangNodeFields(String xmlname, NBrightInfo baseInfo, NBrightInfo dlang)
+        {
+            var nodList3I = baseInfo.XMLDoc.SelectNodes("genxml/" + xmlname + "/genxml");
+            if (nodList3I != null)
+            {
+                for (int i = 1; i <= nodList3I.Count; i++)
+                {
+                    var nodList3 = baseInfo.XMLDoc.SelectNodes("genxml/" + xmlname + "/genxml[" + i + "]/textbox/*");
+                    if (nodList3 != null)
+                    {
+                        foreach (XmlNode nod in nodList3)
+                        {
+                            if (nod.InnerText.Trim() != "")
+                            {
+                                if (dlang.GetXmlProperty("genxml/" + xmlname + "/genxml[" + i + "]/textbox/" + nod.Name) == "")
+                                {
+                                    if (dlang.XMLDoc.SelectSingleNode("genxml/" + xmlname + "/genxml[" + i + "]") == null)
+                                    {
+                                        var baseXml = baseInfo.XMLDoc.SelectSingleNode("genxml/" + xmlname + "/genxml[" + i + "]");
+                                        if (baseXml != null)
+                                        {
+                                            if (dlang.XMLDoc.SelectSingleNode("genxml/" + xmlname) == null)
+                                            {
+                                                dlang.AddSingleNode(xmlname, "", "genxml");
+                                            }
+                                            dlang.AddXmlNode(baseXml.OuterXml, "genxml", "genxml/" + xmlname);
+                                        }
+                                    }
+
+                                    dlang.SetXmlProperty("genxml/" + xmlname + "/genxml[" + i + "]/textbox/" + nod.Name, nod.InnerText);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return dlang;
+        }
 
         /// <summary>
-        /// Get current portal StoreSettings
-        /// </summary>
-        /// <returns></returns>
-	    public static StoreSettings GetCurrentPortalData()
+            /// Get current portal StoreSettings
+            /// </summary>
+            /// <returns></returns>
+        public static StoreSettings GetCurrentPortalData()
 	    {
             StoreSettings objPortalSettings = null;
             if (HttpContext.Current != null)
@@ -608,28 +753,7 @@ namespace Nevoweb.DNN.NBrightBuy.Components
 
 		}
 
-		#endregion
-
-
-		#region ISearchable Members
-
-		/// -----------------------------------------------------------------------------
-		/// <summary>
-		///   GetSearchItems implements the ISearchable Interface
-		/// </summary>
-		/// <remarks>
-		/// </remarks>
-		/// <param name = "ModInfo">The ModuleInfo for the module to be Indexed</param>
-		/// <history>
-		/// </history>
-		/// -----------------------------------------------------------------------------
-		public SearchItemInfoCollection GetSearchItems(ModuleInfo ModInfo)
-		{
-			var searchItemCollection = new SearchItemInfoCollection();
-			return searchItemCollection;
-		}
-
-		#endregion
+        #endregion
 
 
 		#endregion

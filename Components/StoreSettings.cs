@@ -18,6 +18,7 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         public const String ManagerRole = "Manager";
         public const String EditorRole = "Editor";
         public const String DealerRole = "Dealer";
+        public const String ClientEditorRole = "ClientEditor";
 
         #region Constructors
         public StoreSettings(int portalId)
@@ -235,7 +236,6 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         public String ManagerEmail { get; private set; }
         public NBrightInfo SettingsInfo { get; private set; }
         public String ThemeFolder { get; private set; }
-        public int ActiveCatId { get; set; }
 
         public String FolderImagesMapPath { get; private set; }
         public String FolderDocumentsMapPath { get; private set; }
