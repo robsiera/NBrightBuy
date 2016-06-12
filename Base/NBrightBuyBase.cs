@@ -26,6 +26,7 @@ namespace Nevoweb.DNN.NBrightBuy.Base
 		public string SelUserId = "";
         public string ThemeFolder = "";
 	    public ModSettings ModSettings;
+        public string RazorTemplate = "";
 
         public Boolean EnablePaging;
 
@@ -45,7 +46,8 @@ namespace Nevoweb.DNN.NBrightBuy.Base
             #region "Get all Settings for module"
             //get Model Level Settings
             ModSettings = new ModSettings(ModuleId, Settings);
-            ModuleKey = ModSettings.Get("modulekey");
+            ModuleKey = ModSettings.Get("modref");
+            if (String.IsNullOrEmpty(ModuleKey)) ModuleKey = ModSettings.Get("modulekey"); // keep backward compatiblity with NBS_ProductView.
 
             #endregion
 

@@ -794,7 +794,14 @@
     <None Include="Installation\Uninstall.SqlDataProvider" />
     <None Include="NBrightThumb.ashx" />
     <None Include="Themes\Classic\Default\detail.cshtml" />
+    <None Include="Themes\config\default\NBS_ProductDisplaysettings.cshtml" />
     <None Include="Themes\config\js\nbbqtycookie.readme" />
+    <None Include="Themes\Cygnus\Default\frontofficepageheader.cshtml" />
+    <None Include="Themes\Cygnus\Default\NBS_ProductDisplayDetail.cshtml" />
+    <None Include="Themes\Cygnus\Default\NBS_ProductDisplayDetail_head.cshtml" />
+    <None Include="Themes\Cygnus\Default\NBS_ProductDisplayList.cshtml" />
+    <None Include="Themes\Cygnus\Default\NBS_ProductDisplayList_head.cshtml" />
+    <None Include="Themes\Cygnus\Default\NBS_ProductDisplaysettings.cshtml" />
     <None Include="XmlConnector.ashx" />
   </ItemGroup>
   <ItemGroup>

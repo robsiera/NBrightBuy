@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Web;
 using System.Web.UI;
@@ -21,21 +22,31 @@ namespace Nevoweb.DNN.NBrightBuy.Base
         {
             base.OnInit(e);
 
-            var themefolder = "";
             if (ModSettings.Settings().ContainsKey("themefolder") && ModSettings.Settings()["themefolder"] != "")
             {
-                themefolder = ModSettings.Settings()["themefolder"];
+                ThemeFolder = ModSettings.Settings()["themefolder"];
+            }
+            if (ThemeFolder == "") ThemeFolder = StoreSettings.Current.ThemeFolder;
+
+            if (ModSettings.Settings().ContainsKey("razortemplate") && ModSettings.Settings()["razortemplate"] != "")
+            {
+                RazorTemplate = ModSettings.Settings()["razortemplate"];
             }
 
-            NBrightBuyUtils.IncludePageHeaderDefault(ModCtrl, Page, "frontofficepageheader.html", themefolder, DebugMode);
+            // insert page header text
+            NBrightBuyUtils.RazorIncludePageHeader(ModuleId, Page, "frontofficepageheader.cshtml", ControlPath, ThemeFolder, ModSettings.Settings());
+
             if (ModuleContext.Configuration != null)
             {
-                NBrightBuyUtils.IncludePageHeaderDefault(ModCtrl, Page, "pageheader" + ModuleContext.Configuration.DesktopModule.ModuleName + ".html", themefolder, DebugMode);                
-            }
+                if (String.IsNullOrEmpty(RazorTemplate)) RazorTemplate = ModuleConfiguration.DesktopModule.ModuleName + ".cshtml";
 
-            if (themefolder == "") themefolder = StoreSettings.Current.ThemeFolder;
-            Controls.AddAt(0, new LiteralControl("<div class='" + themefolder + "'><!-- " + themefolder + " Start -->"));
-            Controls.AddAt(Controls.Count, new LiteralControl("</div><!-- " + themefolder + " End -->"));
+                // insert page header text
+                NBrightBuyUtils.RazorIncludePageHeader(ModuleId, Page, Path.GetFileNameWithoutExtension(RazorTemplate) + "_head" + Path.GetExtension(RazorTemplate), ControlPath, ThemeFolder, ModSettings.Settings());
+            }
+            var strOut = "<span class='container_" + ThemeFolder + "_" + RazorTemplate + "'>";
+
+            Controls.AddAt(0, new LiteralControl("<div class='container_" + ThemeFolder.ToLower().Replace(" ","_") + "_" + RazorTemplate.ToLower().Replace(".cshtml","").Replace(" ", "_") + "'>"));
+            Controls.AddAt(Controls.Count, new LiteralControl("</div>"));
 
         }
 

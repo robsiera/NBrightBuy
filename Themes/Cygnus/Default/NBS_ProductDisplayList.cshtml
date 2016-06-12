@@ -1,0 +1,124 @@
+﻿@inherits NBrightBuy.render.NBrightBuyRazorTokens<NBrightRazor>
+@using System.Linq
+@using System.Web
+@using NBrightDNN
+@using Nevoweb.DNN.NBrightBuy.Components;
+
+@AddMetaData("resourcepath", "/DesktopModules/NBright/NBrightBuy/App_LocalResources/")
+
+
+<!-- Product List header -->
+
+<div class="categorybreadcrumbs">Vous êtes ici : <a href="/" class="SkinObject">Accueil</a> > <a href="/formations-inter/toutes-nos-formations">Catalogue des formations</a> @CategoryBreadCrumb(false,Model,true,-1," > ")</div>
+
+<div class="nbs">
+
+    <div class="categorydetails">
+        <h1>@Category("categoryname",Model)</h1>
+        <div class="categorydesc">@Category("categorydesc", Model)</div>
+    </div>
+
+    <div id="accordion" class="productlist">
+
+        <!-- Product List Body -->
+
+        @{
+            var lang = "";
+        }
+        @foreach (NBrightInfo info in Model.List)
+        {
+            var product = new ProductData(info.ItemID, info.Lang);
+            lang = info.Lang;
+
+            <!-- List item -->
+            <div class="pl-tr @info.GetXmlProperty("genxml/nosessions") @info.GetXmlProperty("genxml/typeformation") @info.GetXmlProperty("genxml/duree") @info.GetXmlProperty("genxml/venues") @info.GetXmlProperty("genxml/months")">
+                <div class="duree">@info.GetXmlProperty("genxml/textbox/duree") @info.GetXmlProperty("genxml/textbox/unite")</div>
+                <div class="ref">@info.GetXmlProperty("genxml/textbox/txtproductref")</div>
+                <div>
+                    <a href="@EntryUrl(info, Model, true)" class="entryurl">@info.GetXmlProperty("genxml/lang/genxml/textbox/txtproductname")</a>
+
+                    @{
+                        var seminaire = "";
+                        var cursusmetier = "";
+                        var certification = "";
+                        var certifiant = "";
+                        var nouveaute = "";
+                        var promotion = "";
+                        if (info.GetXmlProperty("genxml/textbox/typologie") == "séminaire etat de l'art")
+                        {
+                            seminaire = "(Séminaire)";
+                        }
+                        if (info.GetXmlProperty("genxml/textbox/typologie") == "Cursus Métier")
+                        {
+                            cursusmetier = "(Cursus Métier)";
+                        }
+                        if (info.GetXmlProperty("genxml/textbox/txtproductref").StartsWith("FC"))
+                        {
+                            certification = "(Certification)";
+                        }
+                        if (product.IsInCategory("formations-certifiantes"))
+                        {
+                            certifiant = "Certifiant";
+                        }
+                        if (info.GetXmlPropertyBool("genxml/checkbox/nouveau"))
+                        {
+                            nouveaute = "Nouveauté";
+                        }
+                        if (product.HasProperty("promo"))
+                        {
+                            promotion = "Promotion";
+                        }
+                    }
+
+                    <font class="seminaire">@(seminaire)</font>
+                    <font class="cursusmetier">@(cursusmetier)</font>
+                    <font class="certification">@(certification)</font>
+                    <span class="certifiant">@(certifiant)</span>
+                    <span class="nouveaute">@(nouveaute)</span>
+                    <span class="promotion">@(promotion)</span>
+
+                    <div class="resume">@info.GetXmlProperty("genxml/textbox/soustitre")</div>
+                </div>
+            </div>
+
+
+
+                        }
+
+        <!-- Product List footer -->
+
+    </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function($) {
+
+    // ACCORDION SECTIONS
+    $('#accordion').find('.accordion-toggle').click(function(){
+		// Expand or collapse this panel
+		$(this).next().slideToggle('fast',function() {
+				if ($(this).is(':hidden'))
+					$(this).prev().addClass('expandable');
+				else
+					$(this).prev().removeClass('expandable');
+			});
+    });
+
+    // MOBILE VERSION
+    if(jQuery.browser.mobile){
+
+    // Close all Accordion Sections
+    $( ".accordion-toggle" ).each(function() {
+
+		$(this).next().slideToggle('fast',function() {
+				if ($(this).is(':hidden'))
+					$(this).prev().addClass('expandable');
+				else
+					$(this).prev().removeClass('expandable');
+			});
+    });
+
+    };
+
+  });
+</script>
