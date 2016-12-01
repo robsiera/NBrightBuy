@@ -30,7 +30,11 @@ namespace Nevoweb.DNN.NBrightBuy.Components
 
             //Get NBrightBuy Portal Settings.
             var modCtrl = new NBrightBuyController();
-            SettingsInfo = modCtrl.GetByGuidKey(portalId, -1, "SETTINGS", "NBrightBuySettings");
+            SettingsInfo = modCtrl.GetByGuidKey(portalId, -1, "SETTINGS", "NBrightBuySettings" + Utils.GetCurrentCulture());
+            if (SettingsInfo == null)
+            {
+                SettingsInfo = modCtrl.GetByGuidKey(portalId, -1, "SETTINGS", "NBrightBuySettings");
+            }
             if (SettingsInfo != null)
             {
                 AddToSettingDic(SettingsInfo, "genxml/hidden/*");

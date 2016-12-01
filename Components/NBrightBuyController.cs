@@ -654,11 +654,11 @@ namespace Nevoweb.DNN.NBrightBuy.Components
             if (HttpContext.Current != null)
             {
                 // build StoreSettings and place in httpcontext
-                if (HttpContext.Current.Items["NBBStoreSettings" + PortalSettings.Current.PortalId.ToString("")] == null)
+                if (HttpContext.Current.Items["NBBStoreSettings" + PortalSettings.Current.PortalId.ToString("") + Utils.GetCurrentCulture()] == null)
                 {
-                    HttpContext.Current.Items.Add("NBBStoreSettings" + PortalSettings.Current.PortalId.ToString(""), GetStaticStoreSettings(PortalSettings.Current.PortalId));
+                    HttpContext.Current.Items.Add("NBBStoreSettings" + PortalSettings.Current.PortalId.ToString("") + Utils.GetCurrentCulture(), GetStaticStoreSettings(PortalSettings.Current.PortalId));
                 }
-                objPortalSettings = (StoreSettings)HttpContext.Current.Items["NBBStoreSettings" + PortalSettings.Current.PortalId.ToString("")];
+                objPortalSettings = (StoreSettings)HttpContext.Current.Items["NBBStoreSettings" + PortalSettings.Current.PortalId.ToString("") + Utils.GetCurrentCulture()];
             }
             return objPortalSettings;
 	    }
@@ -669,21 +669,21 @@ namespace Nevoweb.DNN.NBrightBuy.Components
         /// <returns></returns>
         private static StoreSettings GetStaticStoreSettings(int portalId)
         {
-            var objSs = (StoreSettings)Utils.GetCache("NBBStoreSettings" + portalId.ToString(""));
+            var objSs = (StoreSettings)Utils.GetCache("NBBStoreSettings" + portalId.ToString("") + Utils.GetCurrentCulture());
             if (objSs == null)
             {
                 objSs = new StoreSettings(portalId);
-                Utils.SetCache("NBBStoreSettings" + portalId.ToString(""), objSs);
+                Utils.SetCache("NBBStoreSettings" + portalId.ToString("") + Utils.GetCurrentCulture(), objSs);
             }
             return objSs;
         }
         public StoreSettings GetStoreSettings(int portalId)
         {
-            var objSs = (StoreSettings)Utils.GetCache("NBBStoreSettings" + portalId.ToString(""));
+            var objSs = (StoreSettings)Utils.GetCache("NBBStoreSettings" + portalId.ToString("") + Utils.GetCurrentCulture());
             if (objSs == null)
             {
                 objSs = new StoreSettings(portalId);
-                Utils.SetCache("NBBStoreSettings" + portalId.ToString(""), objSs);
+                Utils.SetCache("NBBStoreSettings" + portalId.ToString("") + Utils.GetCurrentCulture(), objSs);
             }
             return objSs;
         }

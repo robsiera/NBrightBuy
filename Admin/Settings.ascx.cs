@@ -161,7 +161,12 @@ namespace Nevoweb.DNN.NBrightBuy.Admin
 
         private void Update()
         {
-            var settings = ModCtrl.GetByGuidKey(PortalSettings.Current.PortalId, 0, "SETTINGS", "NBrightBuySettings");
+            // check if we have set localized portal settings.
+            var postXml = new NBrightInfo(true);
+            postXml.XMLData = GenXmlFunctions.GetGenXml(rpData, "", StoreSettings.Current.FolderImagesMapPath);
+            var editlang = postXml.GetXmlProperty("genxml/hidden/editlang");
+
+            var settings = ModCtrl.GetByGuidKey(PortalSettings.Current.PortalId, 0, "SETTINGS", "NBrightBuySettings" + editlang);
             if (settings == null)
             {
                 settings = new NBrightInfo(true);
@@ -171,9 +176,10 @@ namespace Nevoweb.DNN.NBrightBuy.Admin
                 settings.ModuleId = 0; 
                 settings.ItemID = -1;
                 settings.TypeCode = "SETTINGS";
-                settings.GUIDKey = "NBrightBuySettings";
+                settings.GUIDKey = "NBrightBuySettings" + editlang;
             }
             settings.XMLData = GenXmlFunctions.GetGenXml(rpData,"",StoreSettings.Current.FolderImagesMapPath);
+
 
             if (settings.GetXmlProperty("genxml/hidden/hidemaillogo") != "")
             {
@@ -250,7 +256,7 @@ namespace Nevoweb.DNN.NBrightBuy.Admin
         private void DisplayDataEntryRepeater()
         {
                 //render the detail page
-                var settings = ModCtrl.GetByGuidKey(PortalSettings.Current.PortalId, 0, "SETTINGS", "NBrightBuySettings");
+                var settings = ModCtrl.GetByGuidKey(PortalSettings.Current.PortalId, 0, "SETTINGS", "NBrightBuySettings" + StoreSettings.Current.EditLanguage);
                 if (settings == null) settings = new NBrightInfo(true);
                 base.DoDetail(rpData, settings);
         }

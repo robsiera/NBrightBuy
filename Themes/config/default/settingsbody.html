@@ -1,6 +1,7 @@
 [<tag id="backofficetabid" type="hidden" value="" />]<!-- hidden fields to store auto populated data -->
 [<tag id="ImageResize" const="true" type="hidden" value="700" />]<!-- This resize token affects all images uploaded on this page -->
 [<tag id="countrysortorder" type="postback" value="" persistance="True"/>]
+[<tag id="editlang" type="editculture"/>]
 
 <style>
   #countrylist { list-style-type: none; margin: 0; padding: 0; width: 60%; }
@@ -80,7 +81,7 @@
 		<div class="box">
 			<div class="box-header">
 				<div class="box-name">
-					<i class="fa fa-search"></i><span>[<tag type="valueof" resourcekey="Settings.merchantdetails" />]</span>
+					<i class="fa fa-search"></i><span>[<tag type="valueof" resourcekey="Settings.merchantdetails" />]&nbsp;[<tag type="editflag" />]</span>
 				</div>
 				<div class="box-icons">
 					<a class="collapse-link"><i class="fa fa-chevron-down"></i>
@@ -295,7 +296,7 @@
 	    <div class="box">
 	        <div class="box-header">
 	            <div class="box-name">
-	                <i class="fa fa-search"></i><span>[<tag type="valueof" resourcekey="Settings.folders" />]</span>
+	                <i class="fa fa-search"></i><span>[<tag type="valueof" resourcekey="Settings.folders" />]&nbsp;[<tag type="editflag" />]</span>
 	            </div>
 	            <div class="box-icons">
 	                <a class="collapse-link"><i class="fa fa-chevron-down"></i>
@@ -347,7 +348,7 @@
 		<div class="box">
 			<div class="box-header">
 				<div class="box-name">
-					<i class="fa fa-search"></i><span>[<tag type="valueof" resourcekey="Settings.storeconfiguration" />]</span>
+					<i class="fa fa-search"></i><span>[<tag type="valueof" resourcekey="Settings.storeconfiguration" />]&nbsp;[<tag type="editflag" />]</span>
 				</div>
 				<div class="box-icons">
 					<a class="collapse-link"><i class="fa fa-chevron-down"></i>
@@ -678,7 +679,7 @@
 		<div class="box culturesettings no-drop">
 		    <div class="box-header">
 		        <div class="box-name">
-		            <i class="fa fa-search"></i><span>[<tag type="valueof" resourcekey="Settings.countrydetails" />]</span>
+		            <i class="fa fa-search"></i><span>[<tag type="valueof" resourcekey="Settings.countrydetails" />]&nbsp;[<tag type="editflag" />]</span>
 		        </div>
 		        <div class="box-icons">
 		            <a class="collapse-link"><i class="fa fa-chevron-down"></i>
